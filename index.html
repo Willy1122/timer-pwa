@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>計時器 App</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4facfe">
+<title>計時器</title>
 
 <style>
 body {
@@ -24,16 +22,9 @@ body {
   width: 90%;
 }
 
-.timer-circle {
-  width: 220px;
-  height: 220px;
-  margin: 0 auto 40px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 48px;
+.display {
+  font-size: 72px;
+  margin: 40px 0;
   font-weight: bold;
 }
 
@@ -48,6 +39,7 @@ button {
   color: #007aff;
   font-weight: bold;
 }
+
 button:active {
   transform: scale(0.96);
 }
@@ -55,39 +47,69 @@ button:active {
 </head>
 
 <body>
+
 <div class="container">
   <h1>計時器</h1>
-  <div class="timer-circle" id="display">0</div>
+  <div class="display" id="display">0</div>
 
-  <button onclick="startTimer(10)">開始 10 秒</button>
-  <button onclick="startTimer(45)">開始 45 秒</button>
+  <button onclick="startLoop10()">循環 10 秒</button>
+  <button onclick="start45()">45 秒倒數</button>
 </div>
 
 <script>
-let countdown;
+let timer = null;
 
-function startTimer(seconds) {
-  clearInterval(countdown);
-  let timeLeft = seconds;
+// 🔊 播放提示音
+function playBeep() {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // 音高
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime); // 音量
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + 0.3); // 0.3 秒
+}
+
+// 🔁 10 秒循環
+function startLoop10() {
+  clearInterval(timer);
+  let timeLeft = 10;
   const display = document.getElementById("display");
   display.textContent = timeLeft;
 
-  countdown = setInterval(() => {
+  timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft < 0) {
+      playBeep();
+      timeLeft = 10;
+    }
+    display.textContent = timeLeft;
+  }, 1000);
+}
+
+// ⏱ 45 秒一次
+function start45() {
+  clearInterval(timer);
+  let timeLeft = 45;
+  const display = document.getElementById("display");
+  display.textContent = timeLeft;
+
+  timer = setInterval(() => {
     timeLeft--;
     display.textContent = timeLeft;
 
     if (timeLeft <= 0) {
-      clearInterval(countdown);
+      clearInterval(timer);
+      playBeep();
       display.textContent = "時間到！";
-      if (navigator.vibrate) navigator.vibrate([300,100,300]);
-      alert("時間到！");
     }
   }, 1000);
-}
-
-// 註冊 Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
 }
 </script>
 
