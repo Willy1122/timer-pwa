@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>計時器 App</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4facfe">
+
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
+
+.container {
+  text-align: center;
+  width: 90%;
+}
+
+.timer-circle {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+button {
+  width: 100%;
+  padding: 18px;
+  font-size: 20px;
+  border: none;
+  border-radius: 15px;
+  margin: 10px 0;
+  background: white;
+  color: #007aff;
+  font-weight: bold;
+}
+button:active {
+  transform: scale(0.96);
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>計時器</h1>
+  <div class="timer-circle" id="display">0</div>
+
+  <button onclick="startTimer(10)">開始 10 秒</button>
+  <button onclick="startTimer(45)">開始 45 秒</button>
+</div>
+
+<script>
+let countdown;
+
+function startTimer(seconds) {
+  clearInterval(countdown);
+  let timeLeft = seconds;
+  const display = document.getElementById("display");
+  display.textContent = timeLeft;
+
+  countdown = setInterval(() => {
+    timeLeft--;
+    display.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(countdown);
+      display.textContent = "時間到！";
+      if (navigator.vibrate) navigator.vibrate([300,100,300]);
+      alert("時間到！");
+    }
+  }, 1000);
+}
+
+// 註冊 Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>
